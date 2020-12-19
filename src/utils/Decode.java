@@ -72,9 +72,9 @@ public final class Decode {
 			case "1000":
 				return new Subtract(possibleOpcode, "" + binaryString.charAt(4), binaryString.substring(5, 8), operand);
 			case "1001":
-				//And
+				return new ANDr(possibleOpcode, "" + binaryString.charAt(4), binaryString.substring(5, 8), operand);
 			case "1010":
-				//Or
+				return new ORr(possibleOpcode, "" + binaryString.charAt(4), binaryString.substring(5, 8), operand);
 			case "1011":
 				//Compare
 			case "1100":

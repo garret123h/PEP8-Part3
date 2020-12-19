@@ -38,41 +38,43 @@ public class Simulator implements Observer {
 
 	@Override
 	public void update(Observable o, Object arg) {
-		updateMemoryFromWindow();
+		new Thread (new Runnable() {
+			public void run() {
+				updateMemoryFromWindow();
 
-		String operation = (String) arg;
-		if (operation.equals("Single Step")) {
-			cycleThread = new Thread(() -> {
-				try {
-					controlUnit.executeNextInstruction();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+				String operation = (String) arg;
+				if (operation.equals("Single Step")) {
+					cycleThread = new Thread(() -> {
+						try {
+							controlUnit.executeNextInstruction();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					});
+					cycleThread.start();
+				} else if (operation.equals("Execute")) {
+					cycleThread = new Thread(() -> {
+						try {
+							controlUnit.startCycle();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					});
+					cycleThread.start();
+				} else if (operation.equals("Character In")) {
+					window.notifyObservers();
 				}
-			});
-			cycleThread.start();
-		} else if (operation.equals("Execute")) {
-			cycleThread = new Thread(() -> {
-				try {
-					controlUnit.startCycle();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			});
-			cycleThread.start();
-		} else if (operation.equals("Character In")) {
-			window.notifyObservers();
+
+				// Update the GUI components when fetch-execute cycle is finished.
+				window.setMemoryDump(controlUnit.memoryDump);
+				Map<String, String> addressingBits = new HashMap<>();
+				addressingBits.put("N", controlUnit.getMyNFlag() + "");
+				addressingBits.put("Z", controlUnit.getMyZFlag() + "");
+				addressingBits.put("V", controlUnit.getMyVFlag() + "");
+				addressingBits.put("C", controlUnit.getMyCFlag() + "");
+				window.setAddressingBits(addressingBits);
+			}}).start();
 		}
-
-		// Update the GUI components when fetch-execute cycle is finished.
-		window.setMemoryDump(controlUnit.memoryDump);
-		Map<String, String> addressingBits = new HashMap<>();
-		addressingBits.put("N", controlUnit.getMyNFlag() + "");
-		addressingBits.put("Z", controlUnit.getMyZFlag() + "");
-		addressingBits.put("V", controlUnit.getMyVFlag() + "");
-		addressingBits.put("C", controlUnit.getMyCFlag() + "");
-		window.setAddressingBits(addressingBits);
-	}
-
 	private void updateMemoryFromWindow() {
 		// String objectCode = window.getObjectCodeArea().getText().replace("\n",
 		// "").replace(" ", "");
